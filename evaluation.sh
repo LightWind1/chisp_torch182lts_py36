@@ -10,7 +10,7 @@ SAVE_PATH="data/${schema}/generated_datasets/saved_models_${embedding}"
 
 # evaluation
 python evaluation.py \
-    --gold "data/test_gold.sql" \
+    --gold "data/dev_gold.sql" \
     --pred "${SAVE_PATH}/test_result.txt" \
     --etype "match" \
     --db "database" \

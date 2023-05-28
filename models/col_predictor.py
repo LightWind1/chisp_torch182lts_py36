@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from net_utils import run_lstm, col_name_encode
+from models.net_utils import run_lstm, col_name_encode
 
 
 class ColPredictor(nn.Module):
@@ -13,19 +13,18 @@ class ColPredictor(nn.Module):
         self.N_h = N_h
         self.gpu = gpu
         self.use_hs = use_hs
-
-        self.q_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.q_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2),#浮点型强制转换为整形
                 num_layers=N_depth, batch_first=True,
                 dropout=dropout, bidirectional=True)
 
         if N_col:
             N_word = N_col
 
-        self.hs_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.hs_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2),
                 num_layers=N_depth, batch_first=True,
                 dropout=dropout, bidirectional=True)
 
-        self.col_lstm = nn.LSTM(input_size=N_word, hidden_size=N_h/2,
+        self.col_lstm = nn.LSTM(input_size=N_word, hidden_size=int(N_h/2),
                 num_layers=N_depth, batch_first=True,
                 dropout=dropout, bidirectional=True)
 
@@ -107,7 +106,7 @@ class ColPredictor(nn.Module):
         hs_weighted = (hs_enc.unsqueeze(1) * att_prob_hc.unsqueeze(3)).sum(2)
         # Compute prediction scores
         # self.col_out.squeeze(): (B, max_col_len)
-        col_score = self.col_out(self.col_out_q(q_weighted) + int(self.use_hs)* self.col_out_hs(hs_weighted) + self.col_out_c(col_enc)).view(B,-1)
+        col_score = self.col_out(self.col_out_q(q_weighted) + int(self.use_hs) * self.col_out_hs(hs_weighted) + self.col_out_c(col_enc)).view(B,-1)
 
         for idx, num in enumerate(col_len):
             if num < max_col_len:

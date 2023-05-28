@@ -63,6 +63,7 @@ if __name__ == '__main__':
     GPU = True
     if not cfg.nogpu:
         if torch.cuda.device_count() == 0:
+            print("警告！未使用GPU")
             GPU = False
 
     parser = argparse.ArgumentParser()

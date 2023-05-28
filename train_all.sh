@@ -1,6 +1,9 @@
 #!/bin/bash
 
+source /etc/profile
 DATE=`date '+%Y-%m-%d-%H:%M:%S'`
+
+
 
 schema="char"  # char or word
 #schema="word"
@@ -21,6 +24,7 @@ mkdir -p ${log_dir}
 
 export CUDA_VISIBLE_DEVICES=0
 for module in col
+
 do
   nohup python -u train.py \
     --data_root    ${data_root} \

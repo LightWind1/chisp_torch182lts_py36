@@ -80,7 +80,7 @@ if __name__ == '__main__':
         table_type=table_type,
         use_hs=use_hs)
 
-    print "Loading from modules..."
+    print ("Loading from modules...")
     model.multi_sql.load_state_dict(torch.load(
         "{}/multi_sql_models.dump".format(args.models)))
     model.key_word.load_state_dict(torch.load(

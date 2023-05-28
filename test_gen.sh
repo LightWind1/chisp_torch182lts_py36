@@ -9,13 +9,13 @@ toy=""
 embedding="multi"  # multi for multi-lingual or mono for monolingual
 #embedding="mono"
 
-emb_path="embedding/${schema}_emb.txt"
-col_emb_path="embedding/glove.42B.300d.txt"
+emb_path="embedding/char_emb.txt"
+col_emb_path="embedding/glove.6B.300d.txt"
 if [[ ${embedding} == "multi" ]]; then col_emb_path="None"; fi
 
 TEST_DATA="data/${schema}/test.json"
 
-SAVE_PATH="data/${schema}/generated_datasets/saved_models_${embedding}"
+SAVE_PATH="data/${schema}/generated_datasets/saved_models_chars"
 python -u test.py \
    --test_data_path  ${TEST_DATA} \
    --models          ${SAVE_PATH} \

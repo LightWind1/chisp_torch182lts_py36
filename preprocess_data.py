@@ -749,7 +749,6 @@ def parse_data(data, table_path, gen_data_path, history_option, part):
                         key)),
                 "w"),
             indent=2,
-            encoding="UTF-8",
             ensure_ascii=False)
 
 

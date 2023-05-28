@@ -4,7 +4,7 @@ import json
 import numpy as np
 import os
 import signal
-
+from tqdm import tqdm
 
 def get_table_dict(table_data_path):
     data = json.load(open(table_data_path))
@@ -240,7 +240,7 @@ def epoch_train(
         # print("label {}".format(label))
         loss = model.loss(score, label)
         # print("loss {}".format(loss.data.cpu().numpy()))
-        cum_loss += loss.data.cpu().numpy()[0] * (ed - st)
+        cum_loss += loss.data.cpu().numpy() * (ed - st)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -484,7 +484,7 @@ def test_acc(model, batch_size, data, output_path):
     for item in data[:]:
         db_id = item["db_id"]
         if db_id not in table_dict:
-            print "Error %s not in table_dict" % db_id
+            print("Error %s not in table_dict" % db_id)
         # signal.signal(signal.SIGALRM, timeout_handler)
         # signal.alarm(2) # set timer to prevent infinite recursion in SQL
         # generation
@@ -504,16 +504,17 @@ def test_acc(model, batch_size, data, output_path):
 def load_emb(file_name, load_used=False, use_small=False):
     if not load_used:
         print('Loading word embedding from %s' % file_name)
-        ret = {}
+        embeddings_index = {}
         with open(file_name) as inf:
-            for idx, line in enumerate(inf):
+            for idx, line in tqdm(enumerate(inf)):
                 if (use_small and idx >= 5000):
                     break
                 info = line.strip().split(' ')
-                info[0] = info[0].decode('utf-8')
-                if info[0].lower() not in ret:
-                    ret[info[0]] = np.array(map(lambda x: float(x), info[1:]))
-        return ret
+                # info[0] = info[0].decode('utf-8')
+                if info[0].lower() not in embeddings_index:
+                    # embeddings_index[info[0]] = np.array(map(lambda x: float(x), info[1:]))
+                    embeddings_index[info[0]] = np.asarray(info[1:])
+        return embeddings_index
     else:
         print('Load used word embedding')
         with open('../alt/glove/word2idx.json') as inf:

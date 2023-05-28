@@ -1,9 +1,7 @@
-import json
+import numpy as np
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.autograd import Variable
-import numpy as np
 
 AGG_OPS = ('none', 'maximum', 'minimum', 'count', 'sum', 'average')
 
@@ -18,7 +16,7 @@ class WordEmbedding(nn.Module):
         self.SQL_TOK = SQL_TOK
 
         if trainable:
-            print "Using trainable embedding"
+            print("Using trainable embedding")
             self.w2i, word_emb_val = word_emb
             # tranable when using pretrained model, init embedding weights
             # using prev embedding
@@ -28,7 +26,7 @@ class WordEmbedding(nn.Module):
         else:
             # else use word2vec or glove
             self.word_emb = word_emb
-            print "Using fixed embedding"
+            print("Using fixed embedding")
 
     def gen_x_q_batch(self, q):
         B = len(q)
@@ -83,9 +81,13 @@ class WordEmbedding(nn.Module):
                     elif ws_len == 1:
                         history_val.append(emb_list[0])
                     else:
-                        history_val.append(sum(emb_list) / float(ws_len))
+                        emb_list_new = []
+                        for emb in emb_list:
+                            emb_list_new.append(emb.astype(np.float32))
+                        history_val.append(np.mean(emb_list_new, axis=0,dtype=np.float32))
+
                 # ROOT
-                elif isinstance(item, basestring):
+                elif isinstance(item, str):
                     if item == "ROOT":
                         item = "root"
                     elif item == "asc":
@@ -93,26 +95,26 @@ class WordEmbedding(nn.Module):
                     elif item == "desc":
                         item == "descending"
                     if item in (
-                        "none",
-                        "select",
-                        "from",
-                        "where",
-                        "having",
-                        "limit",
-                        "intersect",
-                        "except",
-                        "union",
-                        'not',
-                        'between',
-                        '=',
-                        '>',
-                        '<',
-                        'in',
-                        'like',
-                        'is',
-                        'exists',
-                        'root',
-                        'ascending',
+                            "none",
+                            "select",
+                            "from",
+                            "where",
+                            "having",
+                            "limit",
+                            "intersect",
+                            "except",
+                            "union",
+                            'not',
+                            'between',
+                            '=',
+                            '>',
+                            '<',
+                            'in',
+                            'like',
+                            'is',
+                            'exists',
+                            'root',
+                            'ascending',
                             'descending'):
                         history_val.append(
                             self.word_emb.get(
@@ -124,38 +126,29 @@ class WordEmbedding(nn.Module):
                                 "order",
                                 np.zeros(
                                     self.N_word,
-                                    dtype=np.float32)) +
-                                self.word_emb.get(
-                                "by",
-                                np.zeros(
-                                    self.N_word,
-                                    dtype=np.float32))) /
+                                    dtype=np.float32)).astype(np.float32) +
+                             self.word_emb.get(
+                                 "by",
+                                 np.zeros(
+                                     self.N_word,
+                                     dtype=np.float32)).astype(np.float32)) /
                             2)
                     elif item == "groupBy":
                         history_val.append(
-                            (self.word_emb.get(
-                                "group",
-                                np.zeros(
-                                    self.N_word,
-                                    dtype=np.float32)) +
-                                self.word_emb.get(
-                                "by",
-                                np.zeros(
-                                    self.N_word,
-                                    dtype=np.float32))) /
-                            2)
+                            (self.word_emb.get("group",np.zeros(self.N_word,dtype=np.float32)).astype(np.float32) +
+                             self.word_emb.get("by",np.zeros(self.N_word,dtype=np.float32)).astype(np.float32)) /2)
                     elif item in ('>=', '<=', '!='):
                         history_val.append(
                             (self.word_emb.get(
                                 item[0],
                                 np.zeros(
                                     self.N_word,
-                                    dtype=np.float32)) +
-                                self.word_emb.get(
-                                item[1],
-                                np.zeros(
-                                    self.N_word,
-                                    dtype=np.float32))) /
+                                    dtype=np.float32)).astype(np.float32) +
+                             self.word_emb.get(
+                                 item[1],
+                                 np.zeros(
+                                     self.N_word,
+                                     dtype=np.float32)).astype(np.float32)) /
                             2)
                 elif isinstance(item, int):
                     history_val.append(
@@ -191,19 +184,12 @@ class WordEmbedding(nn.Module):
                         self.N_word, dtype=np.float32))
             else:
                 word = word.split()
-                emb = (
-                    self.word_emb.get(
-                        word[0],
-                        np.zeros(
-                            self.N_word,
-                            dtype=np.float32)) + self.word_emb.get(
-                        word[1],
-                        np.zeros(
-                            self.N_word,
-                            dtype=np.float32))) / 2
+                emb = (self.word_emb.get(word[0],np.zeros(self.N_word,dtype=np.float32)).astype(np.float32) +
+                       self.word_emb.get(word[1],np.zeros(self.N_word,dtype=np.float32)).astype(np.float32)) / 2
             for b in range(B):
                 val_emb_array[b, i, :] = emb
         val_inp = torch.from_numpy(val_emb_array)
+
         if self.gpu:
             val_inp = val_inp.cuda()
         val_inp_var = Variable(val_inp)

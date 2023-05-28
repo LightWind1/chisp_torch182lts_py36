@@ -1,7 +1,7 @@
 ################################
 # Assumptions:
 #   1. sql is correct
-#   2. only table name has alias
+#   2. only table name has alias(别名)
 #   3. only one intersect/union/except
 #
 # val: number(float)/string(str)/sql(dict)
@@ -65,7 +65,7 @@ class Schema:
     def _map(self, schema):
         idMap = {'*': "__all__"}
         id = 1
-        for key, vals in schema.iteritems():
+        for key, vals in schema.items():
             for val in vals:
                 idMap[key.lower() + "." + val.lower()] = "__" + key.lower() + "." + val.lower() + "__"
                 id += 1
